@@ -17,6 +17,7 @@
             reconnectInterval: 2000,
             mock: false,
             enqueue: false,
+            overwrite: false,
             protocols: null
         };
 
@@ -62,12 +63,10 @@
                     else if (typeof arguments[1] === 'object' && arguments[1].length > 0) cfg.protocols = arguments[1];
                 }
             }
+            var ws = cfg.overwrite ? undefined : wss.$get(cfg.url);
 
-            // If the websocket already exists, return that instance
-            var ws = wss.$get(cfg.url);
             if (typeof ws === 'undefined') {
                 var wsCfg = angular.extend({}, wss.$$config, cfg);
-
                 ws = new $websocket(wsCfg, $http);
                 wss.$$websocketList[wsCfg.url] = ws;
             }
@@ -100,6 +99,7 @@
             reconnectInterval: 2000,
             enqueue: false,
             mock: false,
+            overwrite: false,
             protocols: null
         };
 
@@ -119,16 +119,7 @@
         };
 
         me.$$init = function (cfg) {
-
-            if (cfg.mock) {
-                me.$$ws = new $$mockWebsocket(cfg.mock, $http);
-            }
-            else if (cfg.protocols) {
-                me.$$ws = new WebSocket(cfg.url, cfg.protocols);
-            }
-            else {
-                me.$$ws = new WebSocket(cfg.url);
-            }
+            me.$$ws = cfg.mock ? new $$mockWebsocket(cfg.mock, $http) : new WebSocket(cfg.url, cfg.protocols);
 
             me.$$ws.onmessage = function (message) {
                 try {
